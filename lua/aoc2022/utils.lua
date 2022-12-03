@@ -47,6 +47,31 @@ function M.identity(v)
     return v
 end
 
+---@generic T
+---@alias IteratorFn fun(): (T, integer) | nil
+---@generic T
+---@alias Iterable ((T[]) | IteratorFn)
+
+
+--- Convert list to an iterator
+---@generic T
+---@param it Iterable<T>
+---@return IteratorFn<T>
+function M.to_iter(it)
+    if type(it) == 'function' then
+        return it
+    end
+    local i = 0
+    return function()
+        i = i + 1
+        return it[i], i
+    end
+end
+
+local function testfun()
+    return 1, 2
+end
+
 --- Perform reduce operation on a list
 ---@generic T
 ---@generic A
@@ -69,13 +94,13 @@ end
 
 --- Return sum by key
 ---@generic T
----@param tbl T[]
+---@param it Iterable<T>
 ---@param key? fun(T): number
 ---@return number
-function M.sum(tbl, key)
+function M.sum(it, key)
     key = key or M.identity
     local sum = 0
-    for _, item in ipairs(tbl) do
+    for item, i in M.to_iter(it) do
         sum = sum + key(item)
     end
     return sum
@@ -98,6 +123,49 @@ function M.max(list, key)
         end
     end
     return maxv, maxi
+end
+
+--- Returns an iterator over list items grouped in chunks
+---@generic T
+---@param list T[]
+---@param len integer
+---@return IteratorFn<T[]>
+function M.chunks(list, len)
+    local head = 1
+    local tail = len
+    return function()
+        if head > #list then return end
+        local chunk = vim.list_slice(list, head, tail)
+        head = head + len
+        tail = tail + len
+        return chunk
+    end
+end
+
+--- Return new list, containing only items that match condition
+---@generic T
+---@param list T[]
+---@param cond fun(item: T): boolean
+---@return T[]
+function M.filter(list, cond)
+    local new = {}
+    for _, item in ipairs(list) do
+        if cond(item) then
+            table.insert(new, item)
+        end
+    end
+    return new
+end
+
+--- Create a function that indexes into given table
+---@generic T
+---@generic V
+---@param tbl table<T, V>
+---@return fun(T): V
+function M.getitem(tbl)
+    return function(key)
+        return tbl[key]
+    end
 end
 
 return M
