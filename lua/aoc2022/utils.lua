@@ -68,10 +68,6 @@ function M.to_iter(it)
     end
 end
 
-local function testfun()
-    return 1, 2
-end
-
 --- Perform reduce operation on a list
 ---@generic T
 ---@generic A
@@ -144,12 +140,12 @@ end
 
 --- Return new list, containing only items that match condition
 ---@generic T
----@param list T[]
+---@param list Iterable<T>
 ---@param cond fun(item: T): boolean
 ---@return T[]
 function M.filter(list, cond)
     local new = {}
-    for _, item in ipairs(list) do
+    for item in M.to_iter(list) do
         if cond(item) then
             table.insert(new, item)
         end
@@ -166,6 +162,25 @@ function M.getitem(tbl)
     return function(key)
         return tbl[key]
     end
+end
+
+--- Apply a function to all values of a table.
+---
+--- Like vim.tbl_map, but iterates over list-table (or an iterator)
+--- and preserves type information on returned type.
+---
+---@generic T
+---@generic V
+---@param it Iterable<T>
+---@param fn fun(val: T): V
+---@return V[]
+function M.map(it, fn)
+    vim.validate { fn = { fn, 'c' }, it = { it, 't' } }
+    local ret = {}
+    for val in M.to_iter(it) do
+        table.insert(ret, fn(val))
+    end
+    return ret
 end
 
 return M
