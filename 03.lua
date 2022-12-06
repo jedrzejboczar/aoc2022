@@ -50,7 +50,7 @@ end
 local function part1(lines)
     return aoc.utils.sum(lines, function(line)
         local first, second = parse_rucksack(line)
-        local duplicates = find_duplicates(count_chars(first), count_chars(second))
+        local duplicates = find_duplicates(aoc.utils.count_chars(first), aoc.utils.count_chars(second))
         local total_prioriy = aoc.utils.sum(duplicates, item_priority)
         return total_prioriy
     end)
@@ -58,7 +58,7 @@ end
 
 local function part2(lines)
     return aoc.utils.sum(aoc.utils.chunks(lines, 3), function(chunk)
-        local counts = vim.tbl_map(count_chars, chunk)
+        local counts = vim.tbl_map(aoc.utils.count_chars, chunk)
         -- Duplicates between 1 and 2
         local duplicates = aoc.utils.list_toset(find_duplicates(counts[1], counts[2]))
         -- Duplicates between 1-2 and 3

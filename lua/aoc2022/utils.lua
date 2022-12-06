@@ -26,6 +26,18 @@ function M.list_toset(t, value_fn)
     return set
 end
 
+---@param str string
+---@param initial? { [string]: integer }
+---@return { [string]: integer }
+function M.count_chars(str, initial)
+    initial = initial or {}
+    local counts = {}
+    for i = 1, #str do
+        local char = str:sub(i, i)
+        counts[char] = (counts[char] or initial[char] or 0) + 1
+    end
+    return counts
+end
 
 --- Remove duplicate elements from a list
 ---@generic T
