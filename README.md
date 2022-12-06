@@ -20,7 +20,7 @@ nvim --noplugin -u minimal_init.lua
 :AocRun
 ```
 
-Minimal version, run given task:
+Non-interactive run-all:
 ```sh
-nvim --noplugin -u minimal_init.lua -c 'luafile 01.lua'
+nvim --noplugin -u minimal_init.lua --headless -c 'AocRunAll' -c 'quit'
 ```
