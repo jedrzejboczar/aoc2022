@@ -1,5 +1,18 @@
 local M = {}
 
+---Assert a condition or raise an error with formatted message
+---@param val any Value treated as assertion condition
+---@param err string Error message with optional format string placeholders
+---@param ... any Arguments to the format string
+---@return any Value if it was true-ish
+function M.assert(val, err, ...)
+    if not val then
+        -- Use level 2 to show the error at caller location
+        error(string.format(err, ...), 2)
+    end
+    return val
+end
+
 function M.ltrim(line)
     return line:gsub('^%s+', '')
 end
@@ -24,6 +37,15 @@ function M.list_toset(t, value_fn)
         set[val] = value_fn and value_fn(val) or true
     end
     return set
+end
+
+-- Create a list with reversed order of elements
+function M.list_reverse(l)
+    local new = {}
+    for i = #l, 1, -1 do
+        table.insert(new, l[i])
+    end
+    return new
 end
 
 ---@param str string
@@ -68,12 +90,13 @@ end
 --- Convert list to an iterator
 ---@generic T
 ---@param it Iterable<T>
+---@param start? integer
 ---@return IteratorFn<T>
-function M.to_iter(it)
+function M.to_iter(it, start)
     if type(it) == 'function' then
         return it
     end
-    local i = 0
+    local i = start and (start - 1) or 0
     return function()
         i = i + 1
         return it[i], i
@@ -165,6 +188,23 @@ function M.filter(list, cond)
     return new
 end
 
+--- Find position of an element in iterable
+---@generic T
+---@param it Iterable<T>
+---@param val_or_cond T | (fun(item: T): boolean)
+---@return integer | nil
+function M.find(it, val_or_cond)
+    if type(val_or_cond) ~= 'function' then
+        local val = val_or_cond
+        val_or_cond = function(item) return item == val end
+    end
+    for item, i in M.to_iter(it) do
+        if val_or_cond(item) then
+            return i
+        end
+    end
+end
+
 --- Create a function that indexes into given table
 ---@generic T
 ---@generic V
@@ -184,13 +224,13 @@ end
 ---@generic T
 ---@generic V
 ---@param it Iterable<T>
----@param fn fun(val: T): V
+---@param fn fun(val: T, i: integer): V
 ---@return V[]
 function M.map(it, fn)
-    vim.validate { fn = { fn, 'c' }, it = { it, 't' } }
+    vim.validate { fn = { fn, 'f' }, it = { it, {'t', 'f'} } }
     local ret = {}
-    for val in M.to_iter(it) do
-        table.insert(ret, fn(val))
+    for val, i in M.to_iter(it) do
+        table.insert(ret, fn(val, i))
     end
     return ret
 end
