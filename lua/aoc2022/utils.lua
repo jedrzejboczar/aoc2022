@@ -235,4 +235,14 @@ function M.map(it, fn)
     return ret
 end
 
+--- Sort a list by key function
+---@generic T
+---@param lst T[]
+---@param fn fun(val: T): any
+function M.sort_by(lst, fn)
+    table.sort(lst, function(a, b)
+        return fn(a) < fn(b)
+    end)
+end
+
 return M

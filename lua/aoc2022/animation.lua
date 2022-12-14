@@ -30,7 +30,7 @@ function Animation:new(opts)
         top_gravity = opts.top_gravity,
     }, self)
 
-    if obj.off then
+    if obj.off or vim.env.ANIMATION_OFF == '1' then
         return obj
     end
 
@@ -108,7 +108,7 @@ function Animation:valid(quiet)
 end
 
 function Animation:is_off()
-    return self.off or not self:valid()
+    return self.off or vim.env.ANIMATION_OFF == '1' or not self:valid()
 end
 
 function Animation:wait(ms)
